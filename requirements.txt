@@ -1,0 +1,6 @@
+streamlit==1.35.0
+pillow==10.3.0
+pypdf==4.2.0
+numpy==1.26.4
+scipy
+pydub==0.25.1
