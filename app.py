@@ -21,6 +21,7 @@ import streamlit as st
 import codec_engine
 import image_engine
 import audio_engine
+import simulators
 from image_engine import IMAGE_EXTENSIONS
 
 from bit_io import (
@@ -544,11 +545,10 @@ with tab_compress:
         # ── Branch B — Image pipeline ─────────────────────────────────────────
         elif is_img:
             st.markdown("#### 🖼️ Image File Detected — RLE + Quantization Pipeline")
-            try:
-                st.image(raw_compress, caption=uploaded_compress.name,
-                         use_container_width=True)
-            except Exception:
-                st.warning("⚠️  Could not render image preview.")
+            st.success(
+                f"✅  **{uploaded_compress.name}** loaded ({sm['bytes']:,} B) — Image Pipeline ready.",
+                icon="🖼️",
+            )
 
             st.markdown(
                 '<div class="pipeline-box img"><b>Pipeline:</b>&nbsp; '
@@ -858,12 +858,6 @@ with tab_decompress:
             mime_type = f"audio/{ext_disp}" if ext_disp not in ['m4a', 'mp3'] else ("audio/mp4" if ext_disp == 'm4a' else "audio/mpeg")
             st.audio(restored_bytes, format=mime_type)
 
-        if is_image_archive:
-            try:
-                st.image(restored_bytes, caption="Reconstructed image",
-                         use_container_width=True)
-            except Exception:
-                pass
 
         # ── Summary ────────────────────────────────────────────────────────────
         sm_r = _size_metrics(restored_bytes)
@@ -1225,6 +1219,55 @@ the residual variance is:
         "`audio_engine.py`, `codec_engine.py`, and `image_engine.py`. "
         "No external compression libraries are used."
     )
+
+    # ══════════════════════════════════════════════════════════════════════════
+    # SECTION E — Live Micro-Simulators
+    # ══════════════════════════════════════════════════════════════════════════
+    st.markdown("---")
+    st.markdown(
+        '<div class="theory-section"><h3>🔬 Section E — Live Micro-Simulators</h3></div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        """
+        > **The Microscope Philosophy** — Simulating millions of data points would crash your
+        > browser and bury the atomic mechanics under irrelevant scale. Instead, each simulator
+        > below extracts a **microscopic slice** of the problem space:
+        > a 13-character string, a 64-pixel gradient, or 50 audio samples.
+        > At this resolution every dictionary entry, every pixel run, and every staircase
+        > step is individually visible and pedagogically meaningful.
+        """
+    )
+
+    sim_tab_lz, sim_tab_img, sim_tab_audio = st.tabs([
+        "📖  A — LZ78 Dictionary Builder",
+        "🖼️  B — Quantization + RLE",
+        "🎵  C — DM / DPCM Waveform Tracker",
+    ])
+
+    with sim_tab_lz:
+        st.markdown(
+            "**Concept:** Watch the LZ78 dictionary grow one phrase at a time.  "
+            "Each ▶ Step press parses the next phrase, adds it to the dictionary, and "
+            "emits a `(dict_ref, new_char)` output token."
+        )
+        simulators.render_lz78_simulator()
+
+    with sim_tab_img:
+        st.markdown(
+            "**Concept:** A fixed 8 × 8 smooth greyscale gradient is quantised to fewer "
+            "bit-depth levels.  Observe how reducing the bit-depth forces adjacent pixels "
+            "into the same value, creating longer RLE runs and fewer total tokens."
+        )
+        simulators.render_quantization_simulator()
+
+    with sim_tab_audio:
+        st.markdown(
+            "**Concept:** A 50-sample sine wave is tracked by both a Delta Modulation "
+            "staircase and a closed-loop DPCM predictor in real time.  Drag the Δ slider "
+            "left to induce slope overload — watch the staircase fall behind the signal."
+        )
+        simulators.render_waveform_simulator()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
